@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Predictions - BI Copilot{% endblock %}
+{% block page_title %}Predictions{% endblock %}
+{% block page_subtitle %}Train a simple model to predict a numeric target{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <div class="card-header"><h2>Choose a target</h2></div>
+  {% if targets %}
+  <form method="post" action="/predictions" class="inline-form">
+    <div class="field">
+      <label for="target">Predict</label>
+      <select id="target" name="target">
+        {% for t in targets %}
+        <option value="{{ t }}" {% if t == selected_target %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="model">Model</label>
+      <select id="model" name="model">
+        <option value="linear_regression" {% if selected_model == 'linear_regression' %}selected{% endif %}>Linear Regression</option>
+        <option value="random_forest" {% if selected_model == 'random_forest' or not selected_model %}selected{% endif %}>Random Forest</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Train Model</button>
+  </form>
+  {% else %}<p class="muted-note">No suitable numeric columns found to predict.</p>{% endif %}
+</div>
+
+{% if result %}
+  {% if result.available %}
+  <div class="card">
+    <div class="card-header"><h2>Results: predicting {{ result.target }}</h2><span class="badge badge-primary">{{ result.model_used.replace('_',' ')|title }}</span></div>
+    <div class="grid grid-3">
+      <div class="kpi-card"><div class="kpi-label">MAE</div><div class="kpi-value">{{ result.mae }}</div></div>
+      <div class="kpi-card"><div class="kpi-label">RMSE</div><div class="kpi-value">{{ result.rmse }}</div></div>
+      <div class="kpi-card"><div class="kpi-label">R&sup2;</div><div class="kpi-value">{{ result.r2 }}</div></div>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <div class="card-header"><h2>Sample Predictions</h2></div>
+      <table class="data-table">
+        <thead><tr><th>Actual</th><th>Predicted</th></tr></thead>
+        <tbody>
+          {% for p in result.sample_predictions %}
+          <tr><td class="mono">{{ p.actual }}</td><td class="mono">{{ p.predicted }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if result.feature_importance %}
+    <div class="card">
+      <div class="card-header"><h2>Important Features</h2></div>
+      {% for feat, imp in result.feature_importance.items() %}
+      <div style="margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:4px;"><span>{{ feat }}</span><span class="mono">{{ imp }}</span></div>
+        <div class="progress-track"><div class="progress-fill" style="width:{{ (imp * 100 * 4)|round(0) }}%;"></div></div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="card">{% set reason = result.reason %}{% include "_unavailable.html" %}</div>
+  {% endif %}
+{% endif %}
+
+{% endif %}
+{% endblock %}

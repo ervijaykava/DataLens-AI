@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Data Quality - BI Copilot{% endblock %}
+{% block page_title %}Data Quality{% endblock %}
+{% block page_subtitle %}How trustworthy is your uploaded dataset{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <div class="card-header"><h2>Data Quality Score</h2></div>
+  <div class="score-ring-wrap" style="margin-bottom:18px;">
+    <div class="score-number">{{ result.score }}<span>/100</span></div>
+    <span class="badge {% if result.status in ['Excellent','Good'] %}badge-positive{% elif result.status == 'Fair' %}badge-amber{% else %}badge-negative{% endif %}">{{ result.status }}</span>
+  </div>
+  <div class="grid grid-4">
+    {% for label, key in [("Completeness","completeness"), ("Uniqueness","uniqueness"), ("Validity","validity"), ("Consistency","consistency")] %}
+    <div>
+      <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:4px;"><span>{{ label }}</span><span class="mono">{{ result.breakdown[key] }}%</span></div>
+      <div class="progress-track"><div class="progress-fill {% if result.breakdown[key] >= 80 %}positive{% elif result.breakdown[key] >= 60 %}amber{% else %}negative{% endif %}" style="width:{{ result.breakdown[key] }}%;"></div></div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Details</h2></div>
+  <div class="grid grid-4">
+    <div class="kpi-card"><div class="kpi-label">Total Rows</div><div class="kpi-value">{{ "{:,}".format(result.details.total_rows) }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Columns</div><div class="kpi-value">{{ result.details.total_columns }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Missing Values</div><div class="kpi-value">{{ "{:,}".format(result.details.missing_values) }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Duplicate Rows</div><div class="kpi-value">{{ "{:,}".format(result.details.duplicate_rows) }}</div></div>
+  </div>
+  {% if result.details.empty_columns %}
+  <div style="margin-top:16px;">
+    <h3 style="font-size:0.85rem;">Empty Columns</h3>
+    <div class="tag-row">{% for c in result.details.empty_columns %}<span class="badge badge-negative">{{ c }}</span>{% endfor %}</div>
+  </div>
+  {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

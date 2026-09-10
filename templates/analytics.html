@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Analytics - BI Copilot{% endblock %}
+{% block page_title %}Analytics{% endblock %}
+{% block page_subtitle %}Summary statistics, correlation, and distributions{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <div class="card-header"><h2>Data Quality Snapshot</h2><a href="/data-quality" class="muted-note">Full report &rarr;</a></div>
+  <div class="score-ring-wrap">
+    <div class="score-number">{{ quality.score }}<span>/100</span></div>
+    <span class="badge {% if quality.status in ['Excellent','Good'] %}badge-positive{% elif quality.status == 'Fair' %}badge-amber{% else %}badge-negative{% endif %}">{{ quality.status }}</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Numeric Column Statistics</h2></div>
+  {% if stats %}
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Column</th><th>Count</th><th>Mean</th><th>Std Dev</th><th>Min</th><th>Max</th></tr></thead>
+      <tbody>
+        {% for s in stats %}
+        <tr>
+          <td>{{ s.column }}</td><td class="mono">{{ s.count }}</td><td class="mono">{{ "{:,.2f}".format(s.mean) }}</td>
+          <td class="mono">{{ "{:,.2f}".format(s.std) }}</td><td class="mono">{{ "{:,.2f}".format(s.min) }}</td><td class="mono">{{ "{:,.2f}".format(s.max) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="muted-note">No numeric columns found.</p>{% endif %}
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-header"><h2>Correlation Matrix</h2></div>
+    {% if correlation %}
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th></th>{% for c in correlation.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+        <tbody>
+          {% for row in correlation.rows %}
+          <tr>
+            <td><strong>{{ row.label }}</strong></td>
+            {% for v in row.cells %}
+            <td class="mono" style="background: rgba(79,70,229,{{ (v|abs) * 0.2 }});">{{ v }}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}<p class="muted-note">Need at least two numeric columns to compute correlation.</p>{% endif %}
+  </div>
+
+  <div class="card chart-card">
+    <div class="card-header"><h2>Category Distribution</h2></div>
+    {% if charts.category_dist %}{{ charts.category_dist | safe }}{% else %}<p class="muted-note">No category column detected.</p>{% endif %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}

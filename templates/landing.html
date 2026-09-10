@@ -1,0 +1,40 @@
+{% extends "base_public.html" %}
+{% block title %}BI Copilot - Business Intelligence, Explained{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Upload once, understand everything</span>
+    <h1>Turn any spreadsheet into a business briefing.</h1>
+    <p class="lead">
+      Upload a sales or operations file and BI Copilot cleans it, profiles it, and builds
+      an executive dashboard, forecasts, risk &amp; opportunity rankings, and an AI copilot
+      that answers questions about your own numbers - grounded in your data, not guesses.
+    </p>
+    <a href="/signup" class="btn btn-primary">Get started free</a>
+    <a href="/login" class="btn btn-secondary" style="margin-left:10px;">Log in</a>
+  </div>
+</section>
+
+<div class="feature-grid">
+  <div class="feature-card">
+    <div class="icon-dot">1</div>
+    <h3>Upload &amp; profile</h3>
+    <p style="font-size:0.88rem;">Drop in a CSV or Excel file. We detect revenue, product, region, customer, and date columns automatically - no template required.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon-dot">2</div>
+    <h3>Executive dashboard</h3>
+    <p style="font-size:0.88rem;">KPIs, revenue trends, top products and regions, and a business health score built only from signals your data actually supports.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon-dot">3</div>
+    <h3>Ask the AI Copilot</h3>
+    <p style="font-size:0.88rem;">Ask plain-English questions - "why did revenue drop?", "who are my top customers?" - answered from a compact summary of your real numbers.</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon-dot">4</div>
+    <h3>Decide with confidence</h3>
+    <p style="font-size:0.88rem;">Ranked opportunities and risks, churn prediction, anomaly detection, and a what-if simulator for pricing and demand scenarios.</p>
+  </div>
+</div>
+{% endblock %}

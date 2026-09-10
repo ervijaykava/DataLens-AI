@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Reports - BI Copilot{% endblock %}
+{% block page_title %}Reports{% endblock %}
+{% block page_subtitle %}Download a business summary of your dataset{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <div class="card-header"><h2>Business Summary Report</h2></div>
+  <p style="font-size:0.9rem;">Includes KPI summary, top products, top regions, key insights, and recommendations, generated fresh from your current dataset.</p>
+  <div style="display:flex; gap:12px; margin-top:14px;">
+    <a href="/reports/download/excel" class="btn btn-primary">Download Excel</a>
+    <a href="/reports/download/pdf" class="btn btn-secondary">Download PDF</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>What's included</h2></div>
+  <ul style="padding-left:18px; margin:0;">
+    <li style="margin-bottom:6px;">Business Summary &amp; KPI Summary</li>
+    <li style="margin-bottom:6px;">Top Products &amp; Top Regions</li>
+    <li style="margin-bottom:6px;">Key Insights</li>
+    <li style="margin-bottom:6px;">Recommendations</li>
+  </ul>
+</div>
+
+{% endif %}
+{% endblock %}

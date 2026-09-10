@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Autonomous Analyst - BI Copilot{% endblock %}
+{% block page_title %}Autonomous Analyst{% endblock %}
+{% block page_subtitle %}An automatic run through every analysis module{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <div class="card-header"><h2>Executive Summary</h2></div>
+  <ul style="padding-left:18px; margin:0;">
+    {% for line in report.executive_summary %}<li style="margin-bottom:8px;">{{ line }}</li>{% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Ranked Findings</h2></div>
+  {% if report.findings %}
+  {% for f in report.findings %}
+  <div class="finding-item">
+    <div class="finding-priority">
+      <span class="badge {% if f.priority == 'HIGH' %}badge-negative{% elif f.priority == 'MEDIUM' %}badge-amber{% else %}badge-muted{% endif %}">{{ f.priority }}</span>
+    </div>
+    <div class="finding-body">
+      <h3>{{ f.title }}</h3>
+      <p>{{ f.detail }}</p>
+      <div class="finding-action">&#8594; {{ f.action }}</div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}<p class="muted-note">No high-priority findings right now.</p>{% endif %}
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>What is happening?</h3>
+    <p style="font-size:0.9rem;">Total revenue is ${{ "{:,.0f}".format(report.kpis.total_revenue) }} across {{ "{:,}".format(report.kpis.total_orders) }} orders, {{ "up" if report.kpis.growth_pct >= 0 else "down" }} {{ report.kpis.growth_pct|abs }}% period-over-period.</p>
+  </div>
+  <div class="card">
+    <h3>Why is it happening?</h3>
+    {% if report.root_cause.available %}
+    <p style="font-size:0.9rem;">{{ report.root_cause.strongest_contributor_note or (report.root_cause.metric.capitalize() + " moved from $" + "{:,.0f}".format(report.root_cause.prev_total) + " to $" + "{:,.0f}".format(report.root_cause.last_total) + ".") }}</p>
+    {% else %}<p class="muted-note">{{ report.root_cause.reason }}</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>What is unusual?</h3>
+    <p style="font-size:0.9rem;">{{ report.anomalies.anomaly_count }} anomalous record(s) detected out of {{ report.anomalies.anomaly_count + report.anomalies.normal_count }} total.</p>
+  </div>
+  <div class="card">
+    <h3>What opportunity exists?</h3>
+    {% if report.opportunities.opportunities %}
+    <p style="font-size:0.9rem;">{{ report.opportunities.opportunities[0].title }}</p>
+    {% else %}<p class="muted-note">No standout opportunity detected yet.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>What risk exists?</h3>
+    {% if report.risks.risks %}
+    <p style="font-size:0.9rem;">{{ report.risks.risks[0].type }}: {{ report.risks.risks[0].evidence }}</p>
+    {% else %}<p class="muted-note">No elevated risks detected.</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>What should management do?</h3>
+    {% if report.findings %}
+    <p style="font-size:0.9rem;">{{ report.findings[0].action }}</p>
+    {% else %}<p class="muted-note">Continue monitoring - nothing urgent right now.</p>{% endif %}
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}

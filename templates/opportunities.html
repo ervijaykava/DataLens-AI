@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Opportunities - BI Copilot{% endblock %}
+{% block page_title %}Opportunity Center{% endblock %}
+{% block page_subtitle %}Ranked, evidence-backed growth opportunities{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+{% if result.available %}
+{% for o in result.opportunities %}
+<div class="card">
+  <div class="card-header">
+    <h2>{{ o.title }}</h2>
+    <span class="badge badge-primary">{{ o.type }}</span>
+  </div>
+  <p style="font-size:0.9rem;"><strong>Evidence:</strong> {{ o.evidence }}</p>
+  <div class="tag-row" style="margin-bottom:12px;">
+    <span class="badge {% if o.impact == 'High' %}badge-positive{% elif o.impact == 'Medium' %}badge-amber{% else %}badge-muted{% endif %}">Impact: {{ o.impact }}</span>
+    <span class="badge {% if o.confidence == 'High' %}badge-positive{% elif o.confidence == 'Medium' %}badge-amber{% else %}badge-muted{% endif %}">Confidence: {{ o.confidence }}</span>
+    <span class="badge badge-muted">Effort: {{ o.effort }}</span>
+  </div>
+  <p style="font-size:0.87rem; color:var(--primary); font-weight:600;">&#8594; {{ o.recommended_action }}</p>
+</div>
+{% endfor %}
+{% else %}
+<div class="card">{% set reason = result.reason %}{% include "_unavailable.html" %}</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

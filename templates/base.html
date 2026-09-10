@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}BI Copilot{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-toggle">
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+      BI Copilot
+    </div>
+
+    <nav>
+      <div class="nav-group">
+        <div class="nav-group-label">Overview</div>
+        <a class="nav-link {% if request.url.path == '/dashboard' %}active{% endif %}" href="/dashboard">
+          <span class="nav-dot"></span> Dashboard
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Data</div>
+        <a class="nav-link {% if request.url.path == '/upload' %}active{% endif %}" href="/upload">
+          <span class="nav-dot"></span> Upload Data
+        </a>
+        {% if has_dataset %}
+        <a class="nav-link {% if request.url.path == '/data-quality' %}active{% endif %}" href="/data-quality">
+          <span class="nav-dot"></span> Data Quality
+        </a>
+        {% endif %}
+      </div>
+
+      {% if has_dataset %}
+      <div class="nav-group">
+        <div class="nav-group-label">AI &amp; Analytics</div>
+        <a class="nav-link {% if request.url.path == '/copilot' %}active{% endif %}" href="/copilot">
+          <span class="nav-dot"></span> AI Copilot
+        </a>
+        <a class="nav-link {% if request.url.path == '/analyst' %}active{% endif %}" href="/analyst">
+          <span class="nav-dot"></span> Autonomous Analyst
+        </a>
+        <a class="nav-link {% if request.url.path == '/analytics' %}active{% endif %}" href="/analytics">
+          <span class="nav-dot"></span> Analytics
+        </a>
+        {% if has_revenue and has_date %}
+        <a class="nav-link {% if request.url.path == '/root-cause' %}active{% endif %}" href="/root-cause">
+          <span class="nav-dot"></span> Root Cause
+        </a>
+        <a class="nav-link {% if request.url.path == '/forecast' %}active{% endif %}" href="/forecast">
+          <span class="nav-dot"></span> Forecast
+        </a>
+        {% endif %}
+        <a class="nav-link {% if request.url.path == '/predictions' %}active{% endif %}" href="/predictions">
+          <span class="nav-dot"></span> Predictions
+        </a>
+        <a class="nav-link {% if request.url.path == '/anomalies' %}active{% endif %}" href="/anomalies">
+          <span class="nav-dot"></span> Anomalies
+        </a>
+      </div>
+
+      {% if has_customer %}
+      <div class="nav-group">
+        <div class="nav-group-label">Customers</div>
+        <a class="nav-link {% if request.url.path == '/customers' %}active{% endif %}" href="/customers">
+          <span class="nav-dot"></span> Customer Intelligence
+        </a>
+      </div>
+      {% endif %}
+
+      <div class="nav-group">
+        <div class="nav-group-label">Decision Intelligence</div>
+        <a class="nav-link {% if request.url.path == '/opportunities' %}active{% endif %}" href="/opportunities">
+          <span class="nav-dot"></span> Opportunities
+        </a>
+        <a class="nav-link {% if request.url.path == '/risks' %}active{% endif %}" href="/risks">
+          <span class="nav-dot"></span> Risks
+        </a>
+        {% if has_revenue %}
+        <a class="nav-link {% if request.url.path == '/simulator' %}active{% endif %}" href="/simulator">
+          <span class="nav-dot"></span> What-If Simulator
+        </a>
+        {% endif %}
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-label">Reports</div>
+        <a class="nav-link {% if request.url.path == '/reports' %}active{% endif %}" href="/reports">
+          <span class="nav-dot"></span> Reports
+        </a>
+      </div>
+      {% endif %}
+
+      <div class="nav-group">
+        <div class="nav-group-label">Info</div>
+        <a class="nav-link {% if request.url.path == '/about' %}active{% endif %}" href="/about">
+          <span class="nav-dot"></span> About
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <div class="main-col">
+    <header class="topbar">
+      <div style="display:flex; align-items:center; gap:14px;">
+        <label for="nav-toggle" class="hamburger-label">&#9776;</label>
+        <div>
+          <div class="page-title">{% block page_title %}{% endblock %}</div>
+          <div class="page-subtitle">{% block page_subtitle %}{% endblock %}</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        {% if dataset %}
+        <div class="dataset-chip"><span class="dot"></span> {{ dataset.filename }} &middot; {{ dataset.row_count }} rows</div>
+        {% endif %}
+        <span class="user-chip">{{ user.name }}</span>
+        <a href="/logout" class="btn btn-secondary btn-sm">Log out</a>
+      </div>
+    </header>
+
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+</body>
+</html>

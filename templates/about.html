@@ -1,0 +1,44 @@
+{% extends "base_public.html" %}
+{% block title %}About - BI Copilot{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-inner">
+    <span class="hero-eyebrow">About this project</span>
+    <h1>Business Intelligence Copilot</h1>
+    <p class="lead">
+      A college project that turns an uploaded spreadsheet into an executive dashboard,
+      forecasts, and an AI copilot - built with FastAPI, MySQL, and plain HTML/CSS.
+    </p>
+  </div>
+</section>
+
+<div class="feature-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 720px; margin: 0 auto 40px;">
+  <div class="feature-card">
+    <div class="icon-dot">&#8226;</div>
+    <h3>Name</h3>
+    <p style="font-size:0.88rem;">Your Name</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon-dot">&#8226;</div>
+    <h3>Education</h3>
+    <p style="font-size:0.88rem;">Your Education</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon-dot">&#8226;</div>
+    <h3>College</h3>
+    <p style="font-size:0.88rem;">Your College</p>
+  </div>
+  <div class="feature-card">
+    <div class="icon-dot">&#8226;</div>
+    <h3>Skills</h3>
+    <p style="font-size:0.88rem;">Your Skills</p>
+  </div>
+</div>
+
+<div class="auth-shell">
+  <div class="auth-card">
+    <h1>Contact</h1>
+    <div class="subtitle">Your Contact</div>
+  </div>
+</div>
+{% endblock %}

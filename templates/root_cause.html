@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Root Cause - BI Copilot{% endblock %}
+{% block page_title %}Root Cause Analysis{% endblock %}
+{% block page_subtitle %}What's driving the change in your key metric{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <form method="get" action="/root-cause" class="inline-form">
+    <div class="field">
+      <label for="metric">Metric</label>
+      <select id="metric" name="metric">
+        {% for c in numeric_columns %}
+        <option value="{{ c }}" {% if c == selected_metric %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+  </form>
+</div>
+
+{% if result.available %}
+<div class="card">
+  <div class="card-header"><h2>{{ result.metric }}: {{ result.period_from }} &rarr; {{ result.period_to }}</h2></div>
+  <div class="grid grid-3">
+    <div class="kpi-card"><div class="kpi-label">Previous Period</div><div class="kpi-value">${{ "{:,.0f}".format(result.prev_total) }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Latest Period</div><div class="kpi-value">${{ "{:,.0f}".format(result.last_total) }}</div></div>
+    <div class="kpi-card {% if result.direction == 'increase' %}positive{% elif result.direction == 'decrease' %}negative{% endif %}">
+      <div class="kpi-label">Net Change</div>
+      <div class="kpi-value">{{ "{:+,.0f}".format(result.net_change) }} ({{ result.net_change_pct }}%)</div>
+    </div>
+  </div>
+  {% if result.strongest_contributor_note %}
+  <div class="form-error" style="background:var(--amber-bg); color:var(--amber); border-color:#fde68a; margin-top:16px;">{{ result.strongest_contributor_note }}</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Contributors by Dimension</h2></div>
+  {% for label, dim in result.dimensions.items() %}
+  <details class="details-block">
+    <summary>{{ label|capitalize }}</summary>
+    <div class="details-content">
+      {% if dim.top_negative_contributors %}
+      <h3 style="font-size:0.85rem; color:var(--negative);">Declining</h3>
+      <table class="data-table" style="margin-bottom:14px;">
+        <thead><tr><th>Segment</th><th>Previous</th><th>Latest</th><th>Change</th></tr></thead>
+        <tbody>
+          {% for c in dim.top_negative_contributors %}
+          <tr><td>{{ c.segment }}</td><td class="mono">${{ "{:,.0f}".format(c.prev) }}</td><td class="mono">${{ "{:,.0f}".format(c.last) }}</td><td class="mono" style="color:var(--negative);">{{ "{:+,.0f}".format(c.change) }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      {% if dim.top_positive_contributors %}
+      <h3 style="font-size:0.85rem; color:var(--positive);">Growing</h3>
+      <table class="data-table">
+        <thead><tr><th>Segment</th><th>Previous</th><th>Latest</th><th>Change</th></tr></thead>
+        <tbody>
+          {% for c in dim.top_positive_contributors %}
+          <tr><td>{{ c.segment }}</td><td class="mono">${{ "{:,.0f}".format(c.prev) }}</td><td class="mono">${{ "{:,.0f}".format(c.last) }}</td><td class="mono" style="color:var(--positive);">{{ "{:+,.0f}".format(c.change) }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+  </details>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="card">{% set reason = result.reason %}{% include "_unavailable.html" %}</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

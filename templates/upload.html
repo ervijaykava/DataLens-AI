@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Upload Data - BI Copilot{% endblock %}
+{% block page_title %}Upload Data{% endblock %}
+{% block page_subtitle %}Bring in a CSV or Excel file to power every page in the app{% endblock %}
+
+{% block content %}
+{% if error %}<div class="form-error">{{ error }}</div>{% endif %}
+{% if uploaded %}<div class="form-success">"{{ dataset.filename }}" was cleaned and saved successfully. Your dashboard is ready.</div>{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <h2>Upload a dataset</h2>
+    <span class="muted-note">CSV or XLSX &middot; replaces your current dataset</span>
+  </div>
+
+  <form method="post" action="/upload" enctype="multipart/form-data">
+    <div class="dropzone">
+      <div class="icon">&#8593;</div>
+      <h3>Drag a file here, or browse</h3>
+      <p style="font-size:0.85rem; color:var(--muted);">Supports .csv, .xlsx, .xls up to 25 MB</p>
+      <input type="file" name="file" accept=".csv,.xlsx,.xls" required>
+    </div>
+    <div style="margin-top:16px;">
+      <button type="submit" class="btn btn-primary">Analyze Dataset</button>
+    </div>
+  </form>
+</div>
+
+{% if dataset %}
+<div class="card">
+  <div class="card-header">
+    <h2>Current dataset</h2>
+  </div>
+  <div class="grid grid-4">
+    <div class="kpi-card"><div class="kpi-label">Filename</div><div class="kpi-value" style="font-size:1.05rem;">{{ dataset.filename }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Rows</div><div class="kpi-value">{{ "{:,}".format(dataset.row_count) }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Columns</div><div class="kpi-value">{{ dataset.column_count }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Missing Values</div><div class="kpi-value">{{ "{:,}".format(dataset.missing_values) }}</div></div>
+  </div>
+  <div style="margin-top:16px;">
+    <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+  </div>
+</div>
+{% endif %}
+
+{% if profile %}
+<div class="card">
+  <div class="card-header">
+    <h2>Data Profile</h2>
+    <span class="muted-note">Before cleaning</span>
+  </div>
+  <div class="grid grid-4" style="margin-bottom:18px;">
+    <div class="kpi-card"><div class="kpi-label">Rows</div><div class="kpi-value">{{ "{:,}".format(profile.rows) }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Columns</div><div class="kpi-value">{{ profile.columns }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Missing Values</div><div class="kpi-value">{{ "{:,}".format(profile.total_missing) }}</div></div>
+    <div class="kpi-card"><div class="kpi-label">Duplicate Rows</div><div class="kpi-value">{{ "{:,}".format(profile.duplicate_rows) }}</div></div>
+  </div>
+
+  <h3>Detected column types</h3>
+  <div class="tag-row" style="margin-bottom:18px;">
+    {% for col, dtype in profile.dtypes.items() %}
+    <span class="badge badge-muted">{{ col }}: {{ dtype }}</span>
+    {% endfor %}
+  </div>
+
+  <h3>Preview (first 10 rows)</h3>
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead>
+        <tr>{% for col in profile.column_names %}<th>{{ col }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for row in profile.preview %}
+        <tr>{% for col in profile.column_names %}<td>{{ row[col] }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

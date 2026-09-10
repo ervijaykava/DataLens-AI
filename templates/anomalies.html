@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Anomalies - BI Copilot{% endblock %}
+{% block page_title %}Anomaly Detection{% endblock %}
+{% block page_subtitle %}Records that don't look like the rest of your data{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="grid grid-3" style="margin-bottom:20px;">
+  <div class="kpi-card negative"><div class="kpi-label">Anomalies</div><div class="kpi-value">{{ result.anomaly_count }}</div></div>
+  <div class="kpi-card positive"><div class="kpi-label">Normal Records</div><div class="kpi-value">{{ "{:,}".format(result.normal_count) }}</div></div>
+  <div class="kpi-card">
+    <div class="kpi-label">Anomaly Rate</div>
+    <div class="kpi-value">{{ "%.1f"|format((result.anomaly_count / (result.anomaly_count + result.normal_count) * 100) if (result.anomaly_count + result.normal_count) else 0) }}%</div>
+  </div>
+</div>
+
+{% if result.chart_data %}
+<div class="card chart-card">
+  <div class="card-header"><h2>Distribution</h2><span class="muted-note">Red = flagged anomaly</span></div>
+  {{ chart | safe }}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header"><h2>Flagged Records</h2></div>
+  {% if result.anomalies %}
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Product</th><th>Revenue</th><th>Risk</th><th>Reason</th></tr></thead>
+      <tbody>
+        {% for a in result.anomalies %}
+        <tr>
+          <td>{{ a.product or "&mdash;" }}</td>
+          <td class="mono">{{ "${:,.2f}".format(a.revenue) if a.revenue is not none else "&mdash;" }}</td>
+          <td><span class="badge {% if a.risk_level == 'Critical' %}badge-negative{% elif a.risk_level == 'High' %}badge-amber{% else %}badge-muted{% endif %}">{{ a.risk_level }}</span></td>
+          <td style="font-size:0.85rem;">{{ a.reason }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="muted-note">No anomalies detected in this dataset.</p>{% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

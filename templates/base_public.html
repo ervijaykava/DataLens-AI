@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}BI Copilot{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="public-shell">
+  <header class="public-header">
+    <a href="/" class="brand">
+      <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+      BI Copilot
+    </a>
+    <nav class="public-nav">
+      <a href="/about">About</a>
+      {% if user %}
+        <a href="/dashboard">Dashboard</a>
+      {% else %}
+        <a href="/login">Log in</a>
+        <a href="/signup" class="cta">Get Started</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  {% block content %}{% endblock %}
+
+  <footer class="public-footer">Business Intelligence Copilot &middot; built with FastAPI, MySQL &amp; Gemini</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}What-If Simulator - BI Copilot{% endblock %}
+{% block page_title %}What-If Simulator{% endblock %}
+{% block page_subtitle %}Model the impact of price, demand, and cost changes{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+{% if result.available %}
+<div class="card">
+  <div class="card-header"><h2>Scenario Inputs</h2></div>
+  <form method="post" action="/simulator" class="inline-form">
+    <div class="field">
+      <label for="price_pct">Price Change %</label>
+      <input type="number" id="price_pct" name="price_pct" step="0.5" value="{{ inputs.price_change_pct }}">
+    </div>
+    <div class="field">
+      <label for="demand_pct">Demand Change %</label>
+      <input type="number" id="demand_pct" name="demand_pct" step="0.5" value="{{ inputs.demand_change_pct }}">
+    </div>
+    <div class="field">
+      <label for="cost_pct">Cost Change %</label>
+      <input type="number" id="cost_pct" name="cost_pct" step="0.5" value="{{ inputs.cost_change_pct }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Run Simulation</button>
+  </form>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-header"><h2>Baseline</h2></div>
+    <div class="grid grid-2">
+      <div class="kpi-card"><div class="kpi-label">Revenue</div><div class="kpi-value">${{ "{:,.0f}".format(result.baseline.revenue) }}</div></div>
+      {% if result.baseline.profit is not none %}
+      <div class="kpi-card"><div class="kpi-label">Profit</div><div class="kpi-value">${{ "{:,.0f}".format(result.baseline.profit) }}</div></div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>Scenario Result</h2></div>
+    <div class="grid grid-2">
+      <div class="kpi-card positive"><div class="kpi-label">Estimated Revenue</div><div class="kpi-value">${{ "{:,.0f}".format(result.custom_scenario.revenue) }}</div></div>
+      {% if result.custom_scenario.profit is not none %}
+      <div class="kpi-card {% if result.custom_scenario.profit >= result.baseline.profit %}positive{% else %}negative{% endif %}">
+        <div class="kpi-label">Estimated Profit</div><div class="kpi-value">${{ "{:,.0f}".format(result.custom_scenario.profit) }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Scenario Comparison</h2></div>
+  <table class="data-table">
+    <thead><tr><th>Scenario</th><th>Revenue</th>{% if result.baseline.profit is not none %}<th>Profit</th>{% endif %}</tr></thead>
+    <tbody>
+      <tr><td>Worst Case</td><td class="mono">${{ "{:,.0f}".format(result.presets.worst_case.revenue) }}</td>{% if result.baseline.profit is not none %}<td class="mono">${{ "{:,.0f}".format(result.presets.worst_case.profit) }}</td>{% endif %}</tr>
+      <tr style="font-weight:700;"><td>Your Scenario</td><td class="mono">${{ "{:,.0f}".format(result.presets.expected_case.revenue) }}</td>{% if result.baseline.profit is not none %}<td class="mono">${{ "{:,.0f}".format(result.presets.expected_case.profit) }}</td>{% endif %}</tr>
+      <tr><td>Best Case</td><td class="mono">${{ "{:,.0f}".format(result.presets.best_case.revenue) }}</td>{% if result.baseline.profit is not none %}<td class="mono">${{ "{:,.0f}".format(result.presets.best_case.profit) }}</td>{% endif %}</tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Assumptions</h2></div>
+  <ul style="padding-left:18px; margin:0;">
+    {% for a in result.assumptions %}<li style="margin-bottom:6px; font-size:0.87rem;">{{ a }}</li>{% endfor %}
+  </ul>
+</div>
+
+{% else %}
+<div class="card">{% set reason = result.reason %}{% include "_unavailable.html" %}</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

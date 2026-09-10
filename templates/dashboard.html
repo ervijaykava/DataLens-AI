@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - BI Copilot{% endblock %}
+{% block page_title %}Executive Dashboard{% endblock %}
+{% block page_subtitle %}{% if dataset %}Live view of {{ dataset.filename }}{% else %}Upload a dataset to get started{% endif %}{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="grid grid-4" style="margin-bottom:20px;">
+  <div class="kpi-card {% if kpis.growth_pct > 0 %}positive{% elif kpis.growth_pct < 0 %}negative{% endif %}">
+    <div class="kpi-label">Total Revenue</div>
+    <div class="kpi-value">${{ "{:,.0f}".format(kpis.total_revenue) }}</div>
+    <div class="kpi-sub {% if kpis.growth_pct > 0 %}positive{% elif kpis.growth_pct < 0 %}negative{% endif %}">
+      {% if kpis.growth_pct > 0 %}&#9650;{% elif kpis.growth_pct < 0 %}&#9660;{% endif %} {{ kpis.growth_pct }}% vs previous period
+    </div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Total Orders</div>
+    <div class="kpi-value">{{ "{:,}".format(kpis.total_orders) }}</div>
+    <div class="kpi-sub">records analyzed</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Customers</div>
+    <div class="kpi-value">{{ "{:,}".format(kpis.total_customers) if kpis.total_customers else "&mdash;" }}</div>
+    <div class="kpi-sub">unique customers</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Avg Order Value</div>
+    <div class="kpi-value">${{ "{:,.2f}".format(kpis.avg_order_value) }}</div>
+    <div class="kpi-sub">per order</div>
+  </div>
+</div>
+
+{% if kpis.total_profit is not none %}
+<div class="grid grid-2" style="margin-bottom:20px;">
+  <div class="kpi-card"><div class="kpi-label">Total Cost</div><div class="kpi-value">${{ "{:,.0f}".format(kpis.total_cost) }}</div></div>
+  <div class="kpi-card {% if kpis.total_profit > 0 %}positive{% else %}negative{% endif %}">
+    <div class="kpi-label">Total Profit</div><div class="kpi-value">${{ "{:,.0f}".format(kpis.total_profit) }}</div>
+  </div>
+</div>
+{% endif %}
+
+<div class="grid grid-2">
+  <div class="card chart-card">
+    <div class="card-header"><h2>Revenue Trend</h2></div>
+    {% if charts.revenue_trend %}{{ charts.revenue_trend | safe }}
+    {% else %}<p class="muted-note">Needs a date and revenue column to chart a trend.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2>Business Health</h2></div>
+    {% if health.available %}
+    <div class="score-ring-wrap" style="margin-bottom:14px;">
+      <div class="score-number">{{ health.score }}<span>/100</span></div>
+      <span class="badge {% if health.status == 'Healthy' %}badge-positive{% elif health.status == 'Watch' %}badge-amber{% else %}badge-negative{% endif %}">{{ health.status }}</span>
+    </div>
+    {% for s in health.signals %}
+    <div style="margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; font-size:0.82rem; margin-bottom:4px;">
+        <span>{{ s.name }}</span><span class="mono">{{ s.score }}</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill {% if s.score >= 70 %}positive{% elif s.score >= 40 %}amber{% else %}negative{% endif %}" style="width:{{ s.score }}%;"></div></div>
+      <div class="muted-note" style="margin-top:3px;">{{ s.explanation }}</div>
+    </div>
+    {% endfor %}
+    {% else %}<p class="muted-note">{{ health.reason }}</p>{% endif %}
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card chart-card">
+    <div class="card-header"><h2>Top Products</h2></div>
+    {% if charts.top_products %}{{ charts.top_products | safe }}{% else %}<p class="muted-note">No product column detected.</p>{% endif %}
+  </div>
+  <div class="card chart-card">
+    <div class="card-header"><h2>Top Regions</h2></div>
+    {% if charts.top_regions %}{{ charts.top_regions | safe }}{% else %}<p class="muted-note">No region column detected.</p>{% endif %}
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card chart-card">
+    <div class="card-header"><h2>Customer Distribution</h2></div>
+    {% if charts.customer_dist %}{{ charts.customer_dist | safe }}{% else %}<p class="muted-note">No customer column detected.</p>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h2>Key Insights</h2></div>
+    {% if insights %}
+    <ul style="padding-left:18px; margin:0;">
+      {% for i in insights %}<li style="margin-bottom:8px; font-size:0.9rem;">{{ i }}</li>{% endfor %}
+    </ul>
+    {% else %}<p class="muted-note">Not enough data yet for automatic insights.</p>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>AI Recommendations</h2><span class="muted-note"><a href="/copilot">Ask Copilot &rarr;</a></span></div>
+  {% if recommendations %}
+  {% for r in recommendations %}
+  <div class="recommendation-item">
+    <div><span class="num">{{ loop.index }}</span><strong>{{ r.title }}</strong></div>
+    <p style="margin:6px 0 0 30px; font-size:0.87rem;">{{ r.reason }}</p>
+    {% if r.estimated_impact %}<p style="margin:4px 0 0 30px; font-size:0.82rem; color:var(--primary);">{{ r.estimated_impact }}</p>{% endif %}
+  </div>
+  {% endfor %}
+  {% else %}<p class="muted-note">No strong recommendations yet - this usually means the data is too limited to be confident.</p>{% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

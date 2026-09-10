@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Risks - BI Copilot{% endblock %}
+{% block page_title %}Risk Center{% endblock %}
+{% block page_subtitle %}What could hurt the business, ranked by severity{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <div class="card-header"><h2>Overall Risk Level</h2></div>
+  <div class="score-ring-wrap">
+    <div class="score-number">{{ result.overall_risk_score }}<span>/100</span></div>
+    <span class="badge {% if result.overall_risk_level == 'Critical' %}badge-negative{% elif result.overall_risk_level == 'High' %}badge-amber{% elif result.overall_risk_level == 'Medium' %}badge-primary{% else %}badge-positive{% endif %}">{{ result.overall_risk_level }}</span>
+  </div>
+</div>
+
+{% if result.risks %}
+{% for r in result.risks %}
+<div class="card">
+  <div class="card-header">
+    <h2>{{ r.type }}</h2>
+    <span class="badge {% if r.severity == 'Critical' %}badge-negative{% elif r.severity == 'High' %}badge-amber{% elif r.severity == 'Medium' %}badge-primary{% else %}badge-muted{% endif %}">{{ r.severity }}</span>
+  </div>
+  <p style="font-size:0.9rem;"><strong>Evidence:</strong> {{ r.evidence }}</p>
+  <p style="font-size:0.9rem;"><strong>Impact:</strong> {{ r.impact }}</p>
+  <p style="font-size:0.87rem; color:var(--primary); font-weight:600;">&#8594; {{ r.mitigation }}</p>
+</div>
+{% endfor %}
+{% else %}
+<div class="card"><p class="muted-note">No elevated risks detected in this dataset right now.</p></div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Forecast - BI Copilot{% endblock %}
+{% block page_title %}Forecast{% endblock %}
+{% block page_subtitle %}Historical trend projected forward{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+<div class="card">
+  <form method="get" action="/forecast" class="inline-form">
+    <div class="field">
+      <label for="metric">Metric</label>
+      <select id="metric" name="metric">
+        {% for c in numeric_columns %}
+        <option value="{{ c }}" {% if c == selected_metric %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="periods">Months to forecast</label>
+      <select id="periods" name="periods">
+        {% for p in [3, 6, 12] %}
+        <option value="{{ p }}" {% if p == periods %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+  </form>
+</div>
+
+{% if result.available %}
+<div class="card chart-card">
+  <div class="card-header">
+    <h2>Historical Revenue &amp; Forecast</h2>
+    <span class="badge badge-primary">Model: {{ result.best_model.replace('_', ' ')|title }}</span>
+  </div>
+  {{ chart | safe }}
+  <p class="muted-note" style="margin-top:10px;">Solid line = history. Dashed line = forecast, with a shaded ~80% confidence band. Trend is {{ result.trend_direction }}.</p>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-header"><h2>Forecast Values</h2></div>
+    <table class="data-table">
+      <thead><tr><th>Period</th><th>Forecast</th><th>Range</th></tr></thead>
+      <tbody>
+        {% for f in result.forecast %}
+        <tr><td>{{ f.period }}</td><td class="mono">${{ "{:,.0f}".format(f.value) }}</td><td class="mono muted-note">${{ "{:,.0f}".format(f.lower) }} - ${{ "{:,.0f}".format(f.upper) }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>Model Comparison (backtest)</h2></div>
+    <table class="data-table">
+      <thead><tr><th>Model</th><th>MAE</th><th>RMSE</th></tr></thead>
+      <tbody>
+        {% for name, m in result.model_comparison.items() %}
+        <tr {% if name == result.best_model %}style="font-weight:700;"{% endif %}>
+          <td>{{ name.replace('_', ' ')|title }} {% if name == result.best_model %}<span class="badge badge-positive">best</span>{% endif %}</td>
+          <td class="mono">{{ m.mae }}</td><td class="mono">{{ m.rmse }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="muted-note" style="margin-top:10px;">Lower MAE/RMSE = the model would have predicted recent known months more accurately. The lowest-MAE model is used for the forecast above.</p>
+  </div>
+</div>
+
+{% else %}
+<div class="card">{% set reason = result.reason %}{% include "_unavailable.html" %}</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

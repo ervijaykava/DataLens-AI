@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Customer Intelligence - BI Copilot{% endblock %}
+{% block page_title %}Customer Intelligence{% endblock %}
+{% block page_subtitle %}RFM segmentation and churn risk{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+{% if rfm.available %}
+<div class="grid grid-3" style="margin-bottom:20px;">
+  <div class="kpi-card"><div class="kpi-label">Total Customers</div><div class="kpi-value">{{ rfm.customer_count }}</div></div>
+  <div class="kpi-card negative"><div class="kpi-label">High Churn Risk</div><div class="kpi-value">{{ churn.high_risk_count if churn.available else "&mdash;" }}</div></div>
+  <div class="kpi-card"><div class="kpi-label">Segments</div><div class="kpi-value">{{ rfm.segment_counts|length }}</div></div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card chart-card">
+    <div class="card-header"><h2>Customer Segments</h2></div>
+    {{ segment_chart | safe }}
+  </div>
+  <div class="card">
+    <div class="card-header"><h2>Top Customers by Value</h2></div>
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead><tr><th>Customer</th><th>Segment</th><th>Monetary</th></tr></thead>
+        <tbody>
+          {% for c in rfm.top_customers[:8] %}
+          <tr><td>{{ c.customer }}</td><td><span class="badge badge-primary">{{ c.segment }}</span></td><td class="mono">${{ "{:,.0f}".format(c.monetary) }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Churn Risk</h2>
+    {% if churn.available %}<span class="muted-note">Model: {{ churn.model }} &middot; F1 {{ churn.metrics.f1 }}</span>{% endif %}
+  </div>
+  {% if churn.available %}
+  <div class="table-scroll">
+    <table class="data-table">
+      <thead><tr><th>Customer</th><th>Churn Probability</th><th>Risk</th><th>Recency (days)</th><th>Reasons</th></tr></thead>
+      <tbody>
+        {% for c in churn.at_risk_customers[:15] %}
+        <tr>
+          <td>{{ c.customer }}</td>
+          <td class="mono">{{ c.churn_probability }}%</td>
+          <td><span class="badge badge-negative">{{ c.risk_level }}</span></td>
+          <td class="mono">{{ c.recency_days }}</td>
+          <td style="font-size:0.83rem;">{{ c.reasons|join(", ") }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}<p class="muted-note">{{ churn.reason }}</p>{% endif %}
+</div>
+
+{% else %}
+<div class="card">{% set reason = rfm.reason %}{% include "_unavailable.html" %}</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}AI Copilot - BI Copilot{% endblock %}
+{% block page_title %}AI Copilot{% endblock %}
+{% block page_subtitle %}Ask questions about your business data, answered by Gemini{% endblock %}
+
+{% block content %}
+{% if not has_dataset %}
+  {% include "_empty_state.html" %}
+{% else %}
+
+{% if not gemini_configured %}
+<div class="form-error">GEMINI_API_KEY is not set - Copilot is answering with a simple rule-based fallback instead of Gemini. Add your key to .env to enable full AI answers.</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header"><h2>Conversation</h2></div>
+
+  <div class="chat-thread">
+    {% if not history %}
+    <p class="muted-note">Ask your first question below - try one of the suggestions.</p>
+    {% endif %}
+    {% for m in history %}
+    <div class="chat-bubble user">{{ m.question }}</div>
+    <div>
+      <div class="chat-bubble ai">{{ m.answer }}</div>
+      <div class="chat-source">via {{ "Gemini" if m.source == "gemini" else "rule-based fallback" }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="post" action="/copilot">
+    <div class="field">
+      <label for="question">Your question</label>
+      <textarea id="question" name="question" rows="2" required placeholder="e.g. Which product generated the highest revenue?"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Ask Copilot</button>
+  </form>
+
+  <p class="muted-note" style="margin-top:14px;">Try asking: "Why did revenue decrease?" &middot; "Which region is performing best?" &middot; "What should management focus on?" &middot; "What are the biggest risks?"</p>
+</div>
+
+{% endif %}
+{% endblock %}
