@@ -15,6 +15,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 import config
 
+
 DATABASE_URL = URL.create(
     "mysql+pymysql",
     username=config.MYSQL_USER,
@@ -23,10 +24,22 @@ DATABASE_URL = URL.create(
     port=int(config.MYSQL_PORT),
     database=config.MYSQL_DATABASE,
 )
-# pool_pre_ping avoids "MySQL server has gone away" errors after idle periods.
-engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Aiven MySQL requires SSL/TLS connections.
+# pool_pre_ping helps prevent stale MySQL connections.
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True,
+    connect_args={
+        "ssl": {}
+    },
+)
+
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
 Base = declarative_base()
 
