@@ -21,7 +21,7 @@ import io
 import re
 
 import pandas as pd
-from sqlalchemy import text, types as satypes
+from sqlalchemy import text, types as satypes, Column, BigInteger, MetaData, Table
 from sqlalchemy.orm import Session
 
 from database import engine
@@ -188,14 +188,39 @@ def save_dataset_to_mysql(db: Session, user_id: int, filename: str, df: pd.DataF
     rename_map = {col: _safe_column_name(col, used_names) for col in df.columns}
     safe_df = df.rename(columns=rename_map)
 
-    # Drop the old table (if any) and create the new one from the DataFrame.
+    # Drop the old table first.
     with engine.begin() as conn:
         conn.execute(text(f"DROP TABLE IF EXISTS `{table_name}`"))
 
-    sqlalchemy_dtype = {
-        rename_map[col]: _sqlalchemy_type_for(df[col]) for col in df.columns
-    }
-    safe_df.to_sql(table_name, con=engine, if_exists="replace", index=False, dtype=sqlalchemy_dtype)
+    # Aiven requires every newly-created table to have a primary key.
+    # Create the dataset table explicitly with an auto-incrementing primary key.
+    metadata = MetaData()
+
+    table_columns = [
+        Column("__row_id", BigInteger, primary_key=True, autoincrement=True)
+    ]
+
+    for col in safe_df.columns:
+        table_columns.append(
+            Column(col, _sqlalchemy_type_for(safe_df[col]))
+        )
+
+    Table(
+        table_name,
+        metadata,
+        *table_columns
+    )
+
+    # Create the table with a primary key before inserting data.
+    metadata.create_all(bind=engine)
+
+    # Insert the dataset rows. __row_id is generated automatically by MySQL.
+    safe_df.to_sql(
+        table_name,
+        con=engine,
+        if_exists="append",
+        index=False
+    )
 
     # Translate the detected roles (original column names) into the safe names.
     safe_roles = {}
